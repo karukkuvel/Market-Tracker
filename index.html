@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Market Opening Tracker</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom right, #7e5bef, #5b7cfa, #2a9df4);
+      color: white;
+      padding: 20px;
+    }
+    h1 {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 30px;
+    }
+    .region {
+      margin-bottom: 40px;
+    }
+    .region h2 {
+      font-size: 1.75rem;
+      margin-bottom: 15px;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+    }
+    .market-card {
+      background-color: white;
+      color: black;
+      border-radius: 16px;
+      padding: 15px;
+      flex: 1 1 250px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    }
+    .bell {
+      font-size: 24px;
+    }
+    .bell.open {
+      color: green;
+    }
+    .bell.closed {
+      color: red;
+    }
+    .market-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .market-info div {
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h1>📈 Market Opening Tracker</h1>
+  <div id="market-container"></div>
+
+  <script>
+    const markets = [
+      {
+        region: "🌏 Asian Markets",
+        data: [
+          { name: "Nikkei 225 (JP225)", country: "Japan", open: "05:30", close: "11:30" },
+          { name: "Hang Seng (HSI)", country: "Hong Kong", open: "07:00", close: "13:30" },
+          { name: "Shanghai Composite (SHCOMP)", country: "China", open: "07:00", close: "12:30" },
+          { name: "Kospi (KS11)", country: "South Korea", open: "05:30", close: "12:00" },
+          { name: "Nifty 50 (NIFTY)", country: "India", open: "09:15", close: "15:30" },
+        ]
+      },
+      {
+        region: "🇪🇺 European Markets",
+        data: [
+          { name: "FTSE 100 (FTSE)", country: "UK", open: "13:30", close: "22:00" },
+          { name: "DAX 40 (DAX)", country: "Germany", open: "13:30", close: "22:00" },
+          { name: "CAC 40 (CAC)", country: "France", open: "13:30", close: "22:00" },
+          { name: "Euro Stoxx 50 (SX5E)", country: "Eurozone", open: "13:30", close: "22:00" },
+        ]
+      },
+      {
+        region: "🌎 US Markets",
+        data: [
+          { name: "S&P 500 (SPX)", country: "USA", open: "19:00", close: "02:30" },
+          { name: "NASDAQ 100 (NDX)", country: "USA", open: "19:00", close: "02:30" },
+          { name: "Dow Jones (DJI)", country: "USA", open: "19:00", close: "02:30" },
+          { name: "VIX (VIX)", country: "USA", open: "19:00", close: "02:30" },
+        ]
+      },
+    ];
+
+    function parseTime(str) {
+      const [hours, minutes] = str.split(":").map(Number);
+      const now = new Date();
+      now.setHours(hours, minutes, 0, 0);
+      return now;
+    }
+
+    function isMarketOpen(openStr, closeStr) {
+      const now = new Date();
+      const open = parseTime(openStr);
+      const close = parseTime(closeStr);
+      if (close < open) {
+        // Close time is past midnight
+        return now >= open || now <= close;
+      }
+      return now >= open && now <= close;
+    }
+
+    function renderMarkets() {
+      const container = document.getElementById("market-container");
+      container.innerHTML = "";
+
+      markets.forEach(region => {
+        const section = document.createElement("div");
+        section.className = "region";
+
+        const title = document.createElement("h2");
+        title.textContent = region.region;
+        section.appendChild(title);
+
+        const grid = document.createElement("div");
+        grid.className = "grid";
+
+        region.data.forEach(market => {
+          const card = document.createElement("div");
+          card.className = "market-card";
+
+          const info = document.createElement("div");
+          info.className = "market-info";
+          info.innerHTML = `
+            <div><strong>${market.name}</strong></div>
+            <div>${market.country}</div>
+            <div>⏰ ${market.open} - ${market.close} IST</div>
+          `;
+
+          const bell = document.createElement("div");
+          bell.className = `bell ${isMarketOpen(market.open, market.close) ? "open" : "closed"}`;
+          bell.innerHTML = isMarketOpen(market.open, market.close) ? "🔔" : "🔕";
+
+          card.appendChild(info);
+          card.appendChild(bell);
+          grid.appendChild(card);
+        });
+
+        section.appendChild(grid);
+        container.appendChild(section);
+      });
+    }
+
+    renderMarkets();
+    setInterval(renderMarkets, 60000); // Update every minute
+  </script>
+</body>
+</html>
