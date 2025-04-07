@@ -2,59 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Market Opening Tracker</title>
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to bottom right, #7e5bef, #5b7cfa, #2a9df4);
-      color: white;
-      padding: 20px;
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to bottom right, #94a394, #ccffcc);
+    color: #003300;
+    padding: 20px;
     }
+
     h1 {
       text-align: center;
       font-size: 2.5rem;
       margin-bottom: 30px;
+      color: #006400;
     }
+
     .region {
       margin-bottom: 40px;
     }
+
     .region h2 {
       font-size: 1.75rem;
       margin-bottom: 15px;
+      color: #004d00;
     }
+
     .grid {
       display: flex;
       flex-wrap: wrap;
       gap: 15px;
     }
+
     .market-card {
-      background-color: white;
-      color: black;
+      background-color: #ffffff;
+      color: #000;
       border-radius: 16px;
       padding: 15px;
       flex: 1 1 250px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 10px rgba(0, 128, 0, 0.2);
     }
-    .bell {
-      font-size: 24px;
-    }
-    .bell.open {
-      color: green;
-    }
-    .bell.closed {
-      color: red;
-    }
+
     .market-info {
       display: flex;
       flex-direction: column;
     }
+
     .market-info div {
       margin-bottom: 4px;
+    }
+
+    .bell {
+      font-size: 24px;
+    }
+
+    .bell.open {
+      color: green;
+    }
+
+    .bell.closed {
+      color: red;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: #ccffcc;
+      color: #006400;
+      padding: 5px 10px;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      box-shadow: 0 2px 5px rgba(0, 128, 0, 0.2);
+      margin-top: 6px;
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    .live-badge::before {
+      content: '▶';
+      font-size: 0.9rem;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.25); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -65,13 +110,20 @@
   <script>
     const markets = [
       {
+        region: "🌏 Indian Markets",
+        data: [
+          { name: "Nifty 50 (NIFTY)", country: "India", open: "09:15", close: "15:30" },
+          { name: "Gift Nifty (1st Session)", country: "India", open: "06:30", close: "15:40" },
+          { name: "Gift Nifty (2nd Session)", country: "India", open: "16:35", close: "02:45" },
+        ]
+      },
+      {
         region: "🌏 Asian Markets",
         data: [
           { name: "Nikkei 225 (JP225)", country: "Japan", open: "05:30", close: "11:30" },
           { name: "Hang Seng (HSI)", country: "Hong Kong", open: "07:00", close: "13:30" },
           { name: "Shanghai Composite (SHCOMP)", country: "China", open: "07:00", close: "12:30" },
           { name: "Kospi (KS11)", country: "South Korea", open: "05:30", close: "12:00" },
-          { name: "Nifty 50 (NIFTY)", country: "India", open: "09:15", close: "15:30" },
         ]
       },
       {
@@ -106,7 +158,6 @@
       const open = parseTime(openStr);
       const close = parseTime(closeStr);
       if (close < open) {
-        // Close time is past midnight
         return now >= open || now <= close;
       }
       return now >= open && now <= close;
@@ -128,6 +179,8 @@
         grid.className = "grid";
 
         region.data.forEach(market => {
+          const openNow = isMarketOpen(market.open, market.close);
+
           const card = document.createElement("div");
           card.className = "market-card";
 
@@ -137,11 +190,12 @@
             <div><strong>${market.name}</strong></div>
             <div>${market.country}</div>
             <div>⏰ ${market.open} - ${market.close} IST</div>
+            ${openNow ? '<div class="live-badge">Live</div>' : ''}
           `;
 
           const bell = document.createElement("div");
-          bell.className = `bell ${isMarketOpen(market.open, market.close) ? "open" : "closed"}`;
-          bell.innerHTML = isMarketOpen(market.open, market.close) ? "🔔" : "🔕";
+          bell.className = `bell ${openNow ? "open" : "closed"}`;
+          bell.innerHTML = openNow ? "🔔" : "🔕";
 
           card.appendChild(info);
           card.appendChild(bell);
@@ -154,7 +208,7 @@
     }
 
     renderMarkets();
-    setInterval(renderMarkets, 60000); // Update every minute
+    setInterval(renderMarkets, 60000);
   </script>
 </body>
 </html>
